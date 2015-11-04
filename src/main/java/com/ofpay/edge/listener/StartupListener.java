@@ -64,7 +64,6 @@ public class StartupListener implements ServletContextListener {
      * 
      * @see javax.servlet.ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent)
      */
-    @Override
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext servletContext = sce.getServletContext();
         String location = servletContext.getInitParameter(THIRD_LIB_PATH);
@@ -121,7 +120,6 @@ public class StartupListener implements ServletContextListener {
      * 
      * @see javax.servlet.ServletContextListener#contextDestroyed(javax.servlet.ServletContextEvent)
      */
-    @Override
     public void contextDestroyed(ServletContextEvent sce) {
 
     }

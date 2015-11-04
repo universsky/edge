@@ -224,7 +224,7 @@ MainPanel = function() {
         
         items : {
             id : 'welcome-panel',
-            title : 'API Home',
+            title : 'Home',
             autoLoad : {
                 url : 'welcome.html',
                 scope : this
