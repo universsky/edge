@@ -34,16 +34,23 @@ import com.ofpay.edge.util.Tool;
  * Time: 下午8:56
  * To change this template use File | Settings | File Templates.
  */
-public class NotifyMe implements InitializingBean, DisposableBean, NotifyListener, ApplicationContextAware {
+public class NotifyMe
+        implements
+            InitializingBean,
+            DisposableBean,
+            NotifyListener,
+            ApplicationContextAware {
 
-    private static final String[] DEFAULT_SUBSCRIBE_PARAMS = new String[] { Constants.INTERFACE_KEY,
-            Constants.ANY_VALUE, Constants.GROUP_KEY, Constants.ANY_VALUE, Constants.VERSION_KEY, Constants.ANY_VALUE,
-            Constants.CLASSIFIER_KEY, Constants.ANY_VALUE, Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY,
-            Constants.ENABLED_KEY, Constants.ANY_VALUE, Constants.CHECK_KEY, String.valueOf(false) };
+    private static final String[] DEFAULT_SUBSCRIBE_PARAMS = new String[] {Constants.INTERFACE_KEY,
+            Constants.ANY_VALUE, Constants.GROUP_KEY, Constants.ANY_VALUE, Constants.VERSION_KEY,
+            Constants.ANY_VALUE, Constants.CLASSIFIER_KEY, Constants.ANY_VALUE,
+            Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY, Constants.ENABLED_KEY,
+            Constants.ANY_VALUE, Constants.CHECK_KEY, String.valueOf(false)};
 
     private URL subscribe = null;
 
-    private Map<String, String> subcribeParams = CollectionUtils.toStringMap(DEFAULT_SUBSCRIBE_PARAMS);
+    private Map<String, String> subcribeParams =
+            CollectionUtils.toStringMap(DEFAULT_SUBSCRIBE_PARAMS);
 
     private String urlFilterRegex;
 
@@ -53,7 +60,8 @@ public class NotifyMe implements InitializingBean, DisposableBean, NotifyListene
 
     private static Logger logger = LoggerFactory.getLogger(NotifyMe.class);
 
-    public static final ConcurrentMap<String, ConcurrentMap<String, Map<Long, URL>>> registryCache = new ConcurrentHashMap<String, ConcurrentMap<String, Map<Long, URL>>>();
+    public static final ConcurrentMap<String, ConcurrentMap<String, Map<Long, URL>>> registryCache =
+            new ConcurrentHashMap<String, ConcurrentMap<String, Map<Long, URL>>>();
 
     private RegistryService registryService;
 
@@ -73,13 +81,16 @@ public class NotifyMe implements InitializingBean, DisposableBean, NotifyListene
         logger.info("Init NotifyMe...");
 
         // init dubbo application context
-        RegistryConfig registry = appContext.getBean("default-dubbo-registry", RegistryConfig.class);
-        ApplicationConfig application = appContext.getBean("default-dubbo-application", ApplicationConfig.class);
+        RegistryConfig registry =
+                appContext.getBean("default-dubbo-registry", RegistryConfig.class);
+        ApplicationConfig application =
+                appContext.getBean("default-dubbo-application", ApplicationConfig.class);
 
         InterfaceLoader.init(registry, application);
 
         // 订阅注册中心的服务变化
-        subscribe = new URL(Constants.ADMIN_PROTOCOL, NetUtils.getLocalHost(), 0, "", subcribeParams);
+        subscribe =
+                new URL(Constants.ADMIN_PROTOCOL, NetUtils.getLocalHost(), 0, "", subcribeParams);
         registryService.subscribe(subscribe, this);
 
     }
@@ -89,36 +100,41 @@ public class NotifyMe implements InitializingBean, DisposableBean, NotifyListene
             return;
         }
 
-        logger.info("********************************************");
+        //        logger.info("********************************************");
 
         // Map<category, Map<servicename, Map<Long, URL>>>
-        final Map<String, Map<String, Map<Long, URL>>> categories = new HashMap<String, Map<String, Map<Long, URL>>>();
+        final Map<String, Map<String, Map<Long, URL>>> categories =
+                new HashMap<String, Map<String, Map<Long, URL>>>();
         for (URL url : urls) {
             logger.info(url.toFullString());
 
             String clazzName = url.getPath();
             if (Pattern.matches(urlFilterRegex, clazzName)) { // 过滤非关注的URL
 
-                String category = url.getParameter(Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY);
+                String category =
+                        url.getParameter(Constants.CATEGORY_KEY, Constants.PROVIDERS_CATEGORY);
                 if (Constants.EMPTY_PROTOCOL.equalsIgnoreCase(url.getProtocol())) { // 注意：empty协议的group和version为*
                     ConcurrentMap<String, Map<Long, URL>> services = registryCache.get(category);
                     if (services != null) {
                         String group = url.getParameter(Constants.GROUP_KEY);
                         String version = url.getParameter(Constants.VERSION_KEY);
                         // 注意：empty协议的group和version为*
-                        if (!Constants.ANY_VALUE.equals(group) && !Constants.ANY_VALUE.equals(version)) {
+                        if (!Constants.ANY_VALUE.equals(group)
+                                && !Constants.ANY_VALUE.equals(version)) {
                             services.remove(url.getServiceKey());
-                            InterfaceLoader.destroyReference(url.getServiceKey(), Constants.ANY_VALUE);
+                            InterfaceLoader.destroyReference(url.getServiceKey(),
+                                    Constants.ANY_VALUE);
                         } else {
-                            for (Map.Entry<String, Map<Long, URL>> serviceEntry : services.entrySet()) {
+                            for (Map.Entry<String, Map<Long, URL>> serviceEntry : services
+                                    .entrySet()) {
                                 String service = serviceEntry.getKey();
                                 // 如果接口相同&&group相同&&版本相同，则下清除缓存
-                                if ((Tool.getInterface(service).equals(url.getServiceInterface()) || Tool.getInterface(
-                                        service).equals(url.getPath()))
-                                        && (Constants.ANY_VALUE.equals(group) || StringUtils.isEquals(group,
-                                                Tool.getGroup(service)))
-                                        && (Constants.ANY_VALUE.equals(version) || StringUtils.isEquals(version,
-                                                Tool.getVersion(service)))) {
+                                if ((Tool.getInterface(service).equals(url.getServiceInterface())
+                                        || Tool.getInterface(service).equals(url.getPath()))
+                                        && (Constants.ANY_VALUE.equals(group) || StringUtils
+                                                .isEquals(group, Tool.getGroup(service)))
+                                        && (Constants.ANY_VALUE.equals(version) || StringUtils
+                                                .isEquals(version, Tool.getVersion(service)))) {
                                     services.remove(service);
                                     InterfaceLoader.destroyReference(service, Constants.ANY_VALUE);
                                 }

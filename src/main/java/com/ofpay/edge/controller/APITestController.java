@@ -172,7 +172,7 @@ public class APITestController {
             String packageName = className.replace(".", FOLDER_SPLIT);
 
             if (!StringUtils.hasText(group)) {
-                group = "NULL_GROUP";
+                group = "Services";
             }
             packageName = group + FOLDER_SPLIT + packageName;
 
